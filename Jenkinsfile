@@ -38,14 +38,11 @@ pipeline {
             }
         }
         
-        stage('SonarQube Analysis') {
+        stage('SonarQube Analsyis') {
             steps {
                 withSonarQubeEnv('sonar-server') {
-                    sh "mvn clean install -DskipTests"
-                    sh "mvn sonar:sonar \
-                        -Dsonar.projectKey=Bankapp \
-                        -Dsonar.projectName=Bankapp \
-                        -Dsonar.java.binaries=target/classes"
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Bankapp -Dsonar.projectKey=Bankapp \
+                            -Dsonar.java.binaries=. '''
                 }
             }
         }
