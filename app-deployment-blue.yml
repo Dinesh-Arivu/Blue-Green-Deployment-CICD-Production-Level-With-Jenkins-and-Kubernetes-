@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: bankapp-blue
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: bankapp
@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: bankapp
-        image: adijaiswal/bankapp:blue # Adjust the image tag for the blue version
+        image: dinesh1097/bluegreendeploybankapp:blue # Adjust the image tag for the blue version
         ports:
         - containerPort: 8080
         env:
