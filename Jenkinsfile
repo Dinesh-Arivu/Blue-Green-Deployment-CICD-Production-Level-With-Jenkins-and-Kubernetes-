@@ -6,9 +6,14 @@ pipeline {
         choice(name: 'DOCKER_TAG', choices: ['blue', 'green'], description: 'Choose the Docker image tag for the deployment')
         booleanParam(name: 'SWITCH_TRAFFIC', defaultValue: false, description: 'Switch traffic between Blue and Green')
     }
+
+    tools {
+        jdk 'jdk17'
+        maven 'maven3'
+    }
     
     environment {
-        IMAGE_NAME = "adijaiswal/bankapp"
+        IMAGE_NAME = "dinesh1097/bluegreendeploybankapp"
         TAG = "${params.DOCKER_TAG}"  // The image tag now comes from the parameter
         KUBE_NAMESPACE = 'webapps'
         SCANNER_HOME= tool 'sonar-scanner'
@@ -17,14 +22,26 @@ pipeline {
     stages {
         stage('Git Checkout') {
             steps {
-                git branch: 'main', credentialsId: 'git-cred', url: 'https://github.com/jaiswaladi246/3-Tier-NodeJS-MySql-Docker.git'
+                git branch: 'main', credentialsId: 'git-cred', url: 'https://github.com/Dinesh-Arivu/Blue-Green-Deployment-CICD-Production-Level-With-Jenkins-and-Kubernetes-.git'
+            }
+        }
+
+        stage('Compile') {
+            steps {
+                sh "mvn compile"
+            }
+        }
+        
+        stage('Run Unit Tests') {
+            steps {
+                sh "mvn test"
             }
         }
         
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('sonar') {
-                    sh "$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectKey=nodejsmysql -Dsonar.projectName=nodejsmysql"
+                withSonarQubeEnv('sonar-server') {
+                    sh "$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectKey=Bankapp -Dsonar.projectName=Bankapp"
                 }
             }
         }
@@ -32,6 +49,26 @@ pipeline {
         stage('Trivy FS Scan') {
             steps {
                 sh "trivy fs --format table -o fs.html ."
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                script {
+                  waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token' 
+                }
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                sh "mvn package"
+            }
+        }
+        
+       stage('Deploy to Nexus') {
+            steps {
+                echo "Skipping Nexus deployment (no Nexus configured)."
             }
         }
         
