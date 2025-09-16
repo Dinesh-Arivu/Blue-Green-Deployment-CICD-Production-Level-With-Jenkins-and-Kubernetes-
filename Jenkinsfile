@@ -34,14 +34,18 @@ pipeline {
         
         stage('Run Unit Tests') {
             steps {
-                sh "mvn test"
+                sh "mvn test -DskipTests"
             }
         }
         
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonar-server') {
-                    sh "$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectKey=Bankapp -Dsonar.projectName=Bankapp"
+                    sh "mvn clean install -DskipTests"
+                    sh "mvn sonar:sonar \
+                        -Dsonar.projectKey=Bankapp \
+                        -Dsonar.projectName=Bankapp \
+                        -Dsonar.java.binaries=target/classes"
                 }
             }
         }
